@@ -26,6 +26,8 @@ int	ft_atoi(const char *str)
 	i = 0;
 	num = 0;
 	neg = 1;
+	if (!str)
+		return (0);
 	while ((str[i] >= 9 && str[i] <= 13) || str[i] == ' ')
 		i++;
 	if (str[i] == '+' || str[i] == '-')
@@ -62,13 +64,13 @@ void	take_fourch(t_data *philo)
 	if (left < right)
 	{
 		usleep(6000);
-		pthread_mutex_lock(&philo->fourchs[philo->i]);
-		pthread_mutex_lock(&philo->fourchs[(philo->i + 1) % (philo->nb)]);
+		pthread_mutex_lock(&philo->fourchs[left]);
+		pthread_mutex_lock(&philo->fourchs[right]);
 	}
 	else
 	{
-		pthread_mutex_lock(&philo->fourchs[(philo->i + 1) % (philo->nb)]);
-		pthread_mutex_lock(&philo->fourchs[philo->i]);
+		pthread_mutex_lock(&philo->fourchs[right]);
+		pthread_mutex_lock(&philo->fourchs[left]);
 	}
 }
 
@@ -80,7 +82,7 @@ void	philo_sleeping(t_data *philo)
 	time_now = get_time();
 	printf("%ld %ld is sleeping\n", time_now, philo->i + 1);
 	pthread_mutex_unlock(&philo->check->print_mutex);
-	usleep(philo->tts * 1000);
+	usleep(philo->tts * 500);
 }
 
 void	philo_thinking(t_data *philo)
@@ -112,6 +114,8 @@ void	eating_meal(t_data *philo)
 	pthread_mutex_lock(&philo->check->print_mutex);
 	printf("%ld %ld is eating\n", philo->last_meal, philo->i + 1);
 	pthread_mutex_unlock(&philo->check->print_mutex);
+	pthread_mutex_unlock(&philo->fourchs[philo->i]);
+	pthread_mutex_unlock(&philo->fourchs[(philo->i + 1) % (philo->nb)]);
 	usleep(philo->tte * 1000);
 }
 
@@ -128,16 +132,11 @@ int	is_simulation_over(t_data *philo)
 
 void	*checker(t_data *philo)
 {
-	long	last;
-
 	while (1)
 	{
-		usleep(500);
+		usleep(1000);
 		if (is_simulation_over(philo))
 			return (NULL);
-		pthread_mutex_lock(&philo->mutex);
-		last = philo->last_meal;
-		pthread_mutex_unlock(&philo->mutex);
 		pthread_mutex_lock(&philo->mutex);
 		philo->time_now = get_time();
 		if ((philo->time_now - philo->last_meal) > philo->ttd)
@@ -168,8 +167,6 @@ int	count_meals(t_data *philo)
 		pthread_mutex_lock(&philo->check->death);
 		philo->check->done_eating++;
 		pthread_mutex_unlock(&philo->check->death);
-		pthread_mutex_unlock(&philo->fourchs[philo->i]);
-		pthread_mutex_unlock(&philo->fourchs[(philo->i + 1) % (philo->nb)]);
 		return (1);
 	}
 	return (0);
@@ -177,8 +174,8 @@ int	count_meals(t_data *philo)
 
 void	*routine(t_data *philo)
 {
-	struct timeval	time;
-
+	if (philo->i % 2 == 0)
+		usleep(philo->tte * 500);
 	while (1)
 	{
 		if (is_simulation_over(philo))
@@ -196,11 +193,10 @@ void	*routine(t_data *philo)
 			if (count_meals(philo))
 				return (NULL);
 		}
-		pthread_mutex_unlock(&philo->fourchs[philo->i]);
-		pthread_mutex_unlock(&philo->fourchs[(philo->i + 1) % (philo->nb)]);
 		if (is_simulation_over(philo))
 			return (NULL);
-		usleep(500);
+		philo_sleeping(philo);
+		philo_thinking(philo);
 	}
 }
 
@@ -227,11 +223,9 @@ void	manage_philo_2(pthread_t *th, pthread_t *check_death, t_data *philo)
 
 int	manage_philo(t_data *philo)
 {
-	int			i;
 	pthread_t	*th;
 	pthread_t	*check_death;
 
-	i = 0;
 	th = malloc(sizeof(pthread_t) * philo->nb);
 	check_death = malloc(sizeof(pthread_t) * philo->nb);
 	if (!th || !check_death)
@@ -337,44 +331,56 @@ int	check_args(char **av, int ac, int nbr, t_data *philo)
 {
 	if (num(ac, av))
 		return (0);
+	if (ac != 6 && ac != 5)
+		return (0);
 	if (nbr == 1)
 	{
 		philo->time_now = get_time();
 		printf("%ld 1 died\n", philo->time_now);
 		return (0);
 	}
-	if (ac != 6 && ac != 5)
-		return (0);
 	return (1);
 }
 
-int	main(int ac, char **av)
+void	variables_init(int nbr, pthread_mutex_t **fourchs, t_data **philo,
+	t_death **check_death)
 {
-	int				i;
-	t_data			*philo;
-	pthread_mutex_t	*fourchs;
-	int				nbr;
-	t_death			*check_death;
+	*fourchs = malloc(sizeof(pthread_mutex_t) * nbr);
+	*check_death = malloc(sizeof(t_death));
+	*philo = malloc(sizeof(t_data) * nbr);
+	if (!*fourchs || !*check_death || !*philo)
+		return ;
+}
+
+void	get_number_arguments(t_data *philo, int nbr, int ac)
+{
+	int	i;
 
 	i = 0;
-	nbr = ft_atoi(av[1]);
-	fourchs = malloc(sizeof(pthread_mutex_t) * nbr);
-	check_death = malloc(sizeof(t_death));
-	philo = malloc(sizeof(t_data) * nbr);
-	if (!fourchs || !check_death || !philo)
-		return (0);
 	while (i < nbr)
 	{
 		philo[i].ac = ac;
 		i++;
 	}
+}
+
+int	main(int ac, char **av)
+{
+	t_data			*philo;
+	pthread_mutex_t	*fourchs;
+	int				nbr;
+	t_death			*check_death;
+
+	nbr = ft_atoi(av[1]);
+	variables_init(nbr, &fourchs, &philo, &check_death);
 	check_death->dead = 0;
 	check_death->done_eating = 0;
-	if (check_args(av, ac, nbr, philo) == 0)
+	if (!check_args(av, ac, nbr, philo))
 	{
 		destruction2(philo, check_death, fourchs);
 		return (0);
 	}
+	get_number_arguments(philo, nbr, ac);
 	mutex_initialisation(check_death, fourchs, nbr);
 	initialization(philo, av, fourchs, check_death);
 	manage_philo(philo);
