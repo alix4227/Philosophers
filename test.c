@@ -56,21 +56,22 @@ long	get_time(void)
 void	take_fourch(t_data *philo)
 {
 	int	left;
-	int	right ;
+	int	right;
 
 	left = philo->i;
 	right = (philo->i + 1) % philo->nb;
-	usleep(6000);
+	// usleep(500);
 	if (left < right)
 	{
-		usleep(6000);
-		pthread_mutex_lock(&philo->fourchs[left]);
-		pthread_mutex_lock(&philo->fourchs[right]);
+		// usleep(500);
+		pthread_mutex_lock(&philo->fourchs[philo->i]);
+		pthread_mutex_lock(&philo->fourchs[(philo->i + 1) % (philo->nb)]);
 	}
 	else
 	{
-		pthread_mutex_lock(&philo->fourchs[right]);
-		pthread_mutex_lock(&philo->fourchs[left]);
+		
+		pthread_mutex_lock(&philo->fourchs[(philo->i + 1) % (philo->nb)]);
+		pthread_mutex_lock(&philo->fourchs[philo->i]);
 	}
 }
 
@@ -82,7 +83,7 @@ void	philo_sleeping(t_data *philo)
 	time_now = get_time();
 	printf("%ld %ld is sleeping\n", time_now, philo->i + 1);
 	pthread_mutex_unlock(&philo->check->print_mutex);
-	usleep(philo->tts * 500);
+	usleep(philo->tts * 1000);
 }
 
 void	philo_thinking(t_data *philo)
@@ -98,7 +99,7 @@ void	philo_thinking(t_data *philo)
 
 void	eating_meal(t_data *philo)
 {
-	long			time_now;
+	long	time_now;
 
 	pthread_mutex_lock(&philo->check->print_mutex);
 	time_now = get_time();
@@ -114,8 +115,6 @@ void	eating_meal(t_data *philo)
 	pthread_mutex_lock(&philo->check->print_mutex);
 	printf("%ld %ld is eating\n", philo->last_meal, philo->i + 1);
 	pthread_mutex_unlock(&philo->check->print_mutex);
-	pthread_mutex_unlock(&philo->fourchs[philo->i]);
-	pthread_mutex_unlock(&philo->fourchs[(philo->i + 1) % (philo->nb)]);
 	usleep(philo->tte * 1000);
 }
 
@@ -134,9 +133,12 @@ void	*checker(t_data *philo)
 {
 	while (1)
 	{
-		usleep(1000);
+		usleep(500);
 		if (is_simulation_over(philo))
 			return (NULL);
+		// pthread_mutex_lock(&philo->mutex);
+		// philo->last_meal= get_time();
+		// pthread_mutex_unlock(&philo->mutex);
 		pthread_mutex_lock(&philo->mutex);
 		philo->time_now = get_time();
 		if ((philo->time_now - philo->last_meal) > philo->ttd)
@@ -167,6 +169,8 @@ int	count_meals(t_data *philo)
 		pthread_mutex_lock(&philo->check->death);
 		philo->check->done_eating++;
 		pthread_mutex_unlock(&philo->check->death);
+		pthread_mutex_unlock(&philo->fourchs[philo->i]);
+		pthread_mutex_unlock(&philo->fourchs[(philo->i + 1) % (philo->nb)]);
 		return (1);
 	}
 	return (0);
@@ -175,11 +179,9 @@ int	count_meals(t_data *philo)
 void	*routine(t_data *philo)
 {
 	if (philo->i % 2 == 0)
-		usleep(philo->tte * 500);
+		usleep(philo->tte * 1000);
 	while (1)
 	{
-		if (is_simulation_over(philo))
-			return (NULL);
 		take_fourch(philo);
 		if (is_simulation_over(philo))
 		{
@@ -193,10 +195,15 @@ void	*routine(t_data *philo)
 			if (count_meals(philo))
 				return (NULL);
 		}
+		pthread_mutex_unlock(&philo->fourchs[philo->i]);
+		pthread_mutex_unlock(&philo->fourchs[(philo->i + 1) % (philo->nb)]);
 		if (is_simulation_over(philo))
 			return (NULL);
 		philo_sleeping(philo);
-		philo_thinking(philo);
+		philo_thinking(philo); 
+		if (is_simulation_over(philo))
+			return (NULL);
+		usleep(500);
 	}
 }
 
@@ -387,3 +394,4 @@ int	main(int ac, char **av)
 	destruction(philo, check_death, fourchs, nbr);
 	return (0);
 }
+
