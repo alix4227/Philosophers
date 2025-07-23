@@ -41,8 +41,6 @@ void	*routine(t_data *philo)
 			return (NULL);
 		philo_sleeping(philo);
 		philo_thinking(philo);
-		if (is_simulation_over(philo))
-			return (NULL);
 		usleep(500);
 	}
 }

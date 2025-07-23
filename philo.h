@@ -41,6 +41,7 @@ typedef struct s_data
 	long			nb_time_eat;
 	long			time_now;
 	long			has_counted;
+	long			start_time;
 	int				ac;
 	t_death			*check;
 	pthread_mutex_t	*fourchs;

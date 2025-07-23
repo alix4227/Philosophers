@@ -15,10 +15,12 @@
 void	initialization(t_data *philo, char **av, pthread_mutex_t *fourchs,
 	t_death *check_death)
 {
-	int	i;
-	int	nbr;
+	int		i;
+	int		nbr;
+	long	start;
 
 	i = 0;
+	start = get_time();
 	nbr = ft_atoi(av[1]);
 	while (i < nbr)
 	{
@@ -29,9 +31,10 @@ void	initialization(t_data *philo, char **av, pthread_mutex_t *fourchs,
 		if (philo->ac == 6)
 			philo[i].nb_time_eat = ft_atoi(av[5]);
 		philo[i].i = i;
+		philo[i].start_time = start;
 		pthread_mutex_init(&philo[i].mutex, NULL);
 		philo[i].fourchs = fourchs;
-		philo[i].last_meal = get_time();
+		philo[i].last_meal = 0;
 		philo[i].check = check_death;
 		philo[i].meal = 0;
 		philo[i].has_counted = 0;

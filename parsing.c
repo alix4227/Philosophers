@@ -40,7 +40,7 @@ int	check_args(char **av, int ac, int nbr, t_data *philo)
 		return (0);
 	if (nbr == 1)
 	{
-		philo->time_now = get_time();
+		philo->time_now = get_time() - philo->start_time;
 		printf("%ld 1 died\n", philo->time_now);
 		return (0);
 	}

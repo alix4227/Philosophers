@@ -31,7 +31,7 @@ void	*checker(t_data *philo)
 		if (is_simulation_over(philo))
 			return (NULL);
 		pthread_mutex_lock(&philo->mutex);
-		philo->time_now = get_time();
+		philo->time_now = get_time() - philo->start_time;
 		if ((philo->time_now - philo->last_meal) > philo->ttd)
 		{
 			philo->check->dead = 1;
