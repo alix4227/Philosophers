@@ -26,10 +26,7 @@ void	*routine(t_data *philo)
 	{
 		take_fourch(philo);
 		if (is_simulation_over(philo))
-		{
-			pose_fourch(philo);
 			return (NULL);
-		}
 		eating_meal(philo);
 		if (philo->ac == 6)
 		{
@@ -40,7 +37,11 @@ void	*routine(t_data *philo)
 		if (is_simulation_over(philo))
 			return (NULL);
 		philo_sleeping(philo);
+		if (is_simulation_over(philo))
+			return (NULL);
 		philo_thinking(philo);
+		if (is_simulation_over(philo))
+			return (NULL);
 		usleep(500);
 	}
 }

@@ -16,18 +16,46 @@ void	take_fourch(t_data *philo)
 {
 	int	left;
 	int	right;
+	long	time_now;
 
 	left = philo->i;
 	right = (philo->i + 1) % philo->nb;
 	if (left < right)
 	{
-		pthread_mutex_lock(&philo->fourchs[philo->i]);
-		pthread_mutex_lock(&philo->fourchs[(philo->i + 1) % (philo->nb)]);
+		
+		pthread_mutex_lock(&philo->fourchs[left]);
+		if (is_simulation_over(philo))
+		{
+			pthread_mutex_unlock(&philo->fourchs[left]);
+			return ;
+		}
+		pthread_mutex_lock(&philo->check->print_mutex);
+		time_now = get_time() - philo->start_time;
+		printf("%ld %ld has taken a fork\n", time_now, philo->i + 1);
+		pthread_mutex_unlock(&philo->check->print_mutex);
+		pthread_mutex_lock(&philo->fourchs[right]);
+		pthread_mutex_lock(&philo->check->print_mutex);
+		time_now = get_time() - philo->start_time;
+		printf("%ld %ld has taken a fork\n", time_now, philo->i + 1);
+		pthread_mutex_unlock(&philo->check->print_mutex);
 	}
 	else
 	{
-		pthread_mutex_lock(&philo->fourchs[(philo->i + 1) % (philo->nb)]);
+		pthread_mutex_lock(&philo->fourchs[right]);
+		if (is_simulation_over(philo))
+		{
+			pthread_mutex_unlock(&philo->fourchs[right]);
+			return ;
+		}
+		pthread_mutex_lock(&philo->check->print_mutex);
+		time_now = get_time() - philo->start_time;
+		printf("%ld %ld has taken a fork\n", time_now, philo->i + 1);
+		pthread_mutex_unlock(&philo->check->print_mutex);
 		pthread_mutex_lock(&philo->fourchs[philo->i]);
+		pthread_mutex_lock(&philo->check->print_mutex);
+		time_now = get_time() - philo->start_time;
+		printf("%ld %ld has taken a fork\n", time_now, philo->i + 1);
+		pthread_mutex_unlock(&philo->check->print_mutex);
 	}
 }
 
@@ -47,6 +75,8 @@ void	philo_thinking(t_data *philo)
 	long	time_now;
 
 	usleep(500);
+	if (is_simulation_over(philo))
+		return ;
 	pthread_mutex_lock(&philo->check->print_mutex);
 	time_now = get_time() - philo->start_time;
 	printf("%ld %ld is thinking\n", time_now, philo->i + 1);
@@ -55,16 +85,6 @@ void	philo_thinking(t_data *philo)
 
 void	eating_meal(t_data *philo)
 {
-	long	time_now;
-
-	pthread_mutex_lock(&philo->check->print_mutex);
-	time_now = get_time() - philo->start_time;
-	printf("%ld %ld has taken a fork\n", time_now, philo->i + 1);
-	pthread_mutex_unlock(&philo->check->print_mutex);
-	pthread_mutex_lock(&philo->check->print_mutex);
-	time_now = get_time() - philo->start_time;
-	printf("%ld %ld has taken a fork\n", time_now, philo->i + 1);
-	pthread_mutex_unlock(&philo->check->print_mutex);
 	pthread_mutex_lock(&philo->mutex);
 	philo->last_meal = get_time() - philo->start_time;
 	pthread_mutex_unlock(&philo->mutex);
