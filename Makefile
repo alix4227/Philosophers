@@ -14,6 +14,7 @@ SRCS	= cleaning.c \
 		main.c \
 		parsing.c \
 		routine_functions.c \
+		routine_functions2.c \
 		routine.c \
 		utils.c 
 
