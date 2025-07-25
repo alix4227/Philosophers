@@ -38,6 +38,7 @@ void	initialization(t_data *philo, char **av, pthread_mutex_t *fourchs,
 		philo[i].check = check_death;
 		philo[i].meal = 0;
 		philo[i].has_counted = 0;
+		// philo[i].flag = 0;
 		i++;
 	}
 }

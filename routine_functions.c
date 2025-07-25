@@ -15,7 +15,8 @@
 void	philo_sleeping(t_data *philo)
 {
 	long	time_now;
-
+	if (is_simulation_over(philo))
+		return ;
 	pthread_mutex_lock(&philo->check->print_mutex);
 	time_now = get_time() - philo->start_time;
 	printf("%ld %ld is sleeping\n", time_now, philo->i + 1);
@@ -38,6 +39,8 @@ void	philo_thinking(t_data *philo)
 
 void	eating_meal(t_data *philo)
 {
+	if (is_simulation_over(philo))
+		return ;
 	pthread_mutex_lock(&philo->mutex);
 	philo->last_meal = get_time() - philo->start_time;
 	pthread_mutex_unlock(&philo->mutex);

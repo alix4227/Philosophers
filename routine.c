@@ -26,12 +26,18 @@ void	*routine(t_data *philo)
 	{
 		take_fourch(philo);
 		if (is_simulation_over(philo))
+		{
+			pose_fourch(philo);
 			return (NULL);
+		}
 		eating_meal(philo);
 		if (philo->ac == 6)
 		{
 			if (count_meals(philo))
+			{
+				pose_fourch(philo);
 				return (NULL);
+			}
 		}
 		pose_fourch(philo);
 		if (is_simulation_over(philo))

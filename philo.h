@@ -31,6 +31,7 @@ typedef struct s_death
 typedef struct s_data
 {
 	long			i;
+	// long			flag;
 	long			nb;
 	long			last_meal;
 	long			meal;
@@ -74,4 +75,8 @@ void	*routine(t_data *philo);
 int		ft_atoi(const char *str);
 long	get_time(void);
 void	pose_fourch(t_data *philo);
+void	take_left_fourch_first(t_data *philo, int left,
+	int right, long time_now);
+void	take_right_fourch_first(t_data *philo, int right,
+	int left, long time_now);
 #endif
