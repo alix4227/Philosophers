@@ -31,7 +31,6 @@ typedef struct s_death
 typedef struct s_data
 {
 	long			i;
-	// long			flag;
 	long			nb;
 	long			last_meal;
 	long			meal;
@@ -66,7 +65,7 @@ void	manage_philo_2(pthread_t *th, pthread_t *check_death, t_data *philo);
 int		manage_philo(t_data *philo);
 int		num(int ac, char **av);
 int		check_args(char **av, int ac, int nbr, t_data *philo);
-void	take_fourch(t_data *philo);
+int		take_fourch(t_data *philo);
 void	philo_sleeping(t_data *philo);
 void	philo_thinking(t_data *philo);
 void	eating_meal(t_data *philo);
@@ -75,8 +74,8 @@ void	*routine(t_data *philo);
 int		ft_atoi(const char *str);
 long	get_time(void);
 void	pose_fourch(t_data *philo);
-void	take_left_fourch_first(t_data *philo, int left,
-	int right, long time_now);
-void	take_right_fourch_first(t_data *philo, int right,
-	int left, long time_now);
+int		take_left_fourch_first(t_data *philo, int left,
+			int right, long time_now);
+int		take_right_fourch_first(t_data *philo, int right,
+			int left, long time_now);
 #endif

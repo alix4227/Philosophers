@@ -15,6 +15,7 @@
 void	philo_sleeping(t_data *philo)
 {
 	long	time_now;
+
 	if (is_simulation_over(philo))
 		return ;
 	pthread_mutex_lock(&philo->check->print_mutex);
@@ -63,8 +64,6 @@ int	count_meals(t_data *philo)
 		pthread_mutex_lock(&philo->check->death);
 		philo->check->done_eating++;
 		pthread_mutex_unlock(&philo->check->death);
-		pthread_mutex_unlock(&philo->fourchs[philo->i]);
-		pthread_mutex_unlock(&philo->fourchs[(philo->i + 1) % (philo->nb)]);
 		return (1);
 	}
 	return (0);
